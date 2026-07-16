@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Project Briefs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F6F5;
+    --panel: #FFFFFF;
+    --ink: #1A2333;
+    --ink-soft: #5A6472;
+    --line: #CBD3DA;
+    --accent: #2E5AAC;
+    --accent-soft: #E9EFFA;
+    --gold: #E8A33D;
+    --ok: #3C8B6E;
+    --danger: #D93838;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .sidebar {
+    width: 320px;
+    background: #111622;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .sidebar-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+  }
+  .sidebar-header p {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  
+  .leads-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+  .lead-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .lead-card:hover {
+    background: rgba(255,255,255,0.07);
+  }
+  .lead-card.active {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .lead-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .lead-card p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+  }
+  .lead-card .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .badge {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .badge.new { background: #E8A33D; color: #000; }
+  .badge.reviewed { background: #3C8B6E; color: #fff; }
+
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .main-header {
+    background: var(--panel);
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .main-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+  }
+  
+  .detail-body {
+    flex: 1;
+    padding: 32px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+  }
+  
+  .content-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px;
+    height: fit-content;
+  }
+  .content-card h3 {
+    font-size: 16px;
+    margin-bottom: 16px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent-soft);
+    padding-bottom: 6px;
+  }
+  
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .info-item {
+    font-size: 13px;
+  }
+  .info-item label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .info-item span {
+    font-weight: 500;
+  }
+  
+  .text-block {
+    background: #FAFAF9;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    border-left: 3px solid var(--line);
+  }
+  
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .tag {
+    font-size: 12px;
+    background: var(--bg);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+
+  .btn {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s;
+  }
+  .btn-primary { background: var(--ink); color: #fff; }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-status { background: var(--ok); color: #fff; margin-left: 8px;}
+  .btn-danger { background: var(--danger); color: #fff; margin-left: 8px;}
+  .btn-danger:hover { background: #b82828; }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-soft);
+  }
+  
+  .md-box {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: #222;
+    color: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    width: 100%;
+    height: 300px;
+    resize: none;
+  }
+</style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h2>Brief Dashboard</h2>
+      <p>Live Intake Tracker</p>
+    </div>
+    <div class="leads-list" id="leadsContainer"></div>
+  </div>
+
+  <div class="main-content">
+    <div class="main-header">
+      <h1 id="headerBusinessName">Select a Brief</h1>
+      <div id="actionButtons" style="display: none;">
+        <button class="btn btn-primary" id="copyRawBtn">Copy Markdown Data</button>
+        <button class="btn btn-status" id="toggleStatusBtn">Mark Reviewed</button>
+        <button class="btn btn-danger" id="deleteBriefBtn">Delete Brief</button>
+      </div>
+    </div>
+
+    <div class="detail-body" id="detailBody">
+      <div class="empty-state" id="emptyState">
+        <h3>No project brief selected. Click a client card from the sidebar list.</h3>
+      </div>
+      
+      <div class="content-card" id="detailCard" style="display: none;">
+        <h3>Client Info</h3>
+        <div class="info-grid">
+          <div class="info-item"><label>Client Name</label><span id="cName">—</span></div>
+          <div class="info-item"><label>Email</label><span id="cEmail">—</span></div>
+          <div class="info-item"><label>Phone</label><span id="cPhone">—</span></div>
+          <div class="info-item"><label>Timeline</label><span id="cTimeline">—</span></div>
+        </div>
+
+        <h3>Project Specs</h3>
+        <div class="info-grid">
+          <div class="info-item"><label>Site Type</label><span id="cType">—</span></div>
+          <div class="info-item"><label>Theme / Mood</label><span id="cStyle">—</span></div>
+          <div class="info-item"><label>Preset Palette</label><span id="cPreset">—</span></div>
+          <div class="info-item">
+            <label>Primary Custom Color</label>
+            <div style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+              <span id="cColorCircle" style="width:14px; height:14px; border-radius:50%; display:inline-block; border:1px solid var(--line);"></span>
+              <span id="cColorHex">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="info-item" style="font-weight:600; color:var(--ink-soft);">PAGES REQUESTED</label>
+          <div class="tag-container" id="cPagesTags"></div>
+          <div id="cPagesOther" style="font-size:12px; margin-top:6px; font-style:italic; color:var(--ink-soft);"></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="info-item" style="font-weight:600; color:var(--ink-soft);">FEATURES SELECTED</label>
+          <div class="tag-container" id="cFeaturesTags"></div>
+          <div id="cFeaturesOther" style="font-size:12px; margin-top:8px; background:#fff3e3; padding:8px; border-radius:4px; display:none;"></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label class="info-item" style="font-weight:600; color:var(--ink-soft);">PROJECT BRIEF / IDEA</label>
+          <div class="text-block" id="cIdea"></div>
+        </div>
+
+        <div id="cInspirationBox" style="display:none; margin-bottom: 10px;">
+          <label class="info-item" style="font-weight:600; color:var(--ink-soft);">INSPIRATION LINKS</label>
+          <div class="text-block" id="cInspiration" style="background:#eef3fa;"></div>
+        </div>
+      </div>
+
+      <div class="content-card" id="rawCard" style="display: none;">
+        <h3>Copy Context directly into AI Builder</h3>
+        <p style="font-size:12px; color:var(--ink-soft); margin-bottom:12px;">Copy this Markdown output directly into Claude, v0, or ChatGPT to build the requested design layout.</p>
+        <textarea class="md-box" id="rawTextarea" readonly></textarea>
+      </div>
+
+    </div>
+  </div>
+
+<script type="module">
+  // deleteDoc ko add kiya imports me
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDwCrOmMaqRkQqNYc29_UajzW4aZZImjYU",
+    authDomain: "clientintakeform-c33a5.firebaseapp.com",
+    projectId: "clientintakeform-c33a5",
+    storageBucket: "clientintakeform-c33a5.firebasestorage.app",
+    messagingSenderId: "775520727237",
+    appId: "1:775520727237:web:c2e6100c815019e7f600ac",
+    measurementId: "G-TMJ8T0MBCW"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const leadsContainer = document.getElementById('leadsContainer');
+  const emptyState = document.getElementById('emptyState');
+  const detailCard = document.getElementById('detailCard');
+  const rawCard = document.getElementById('rawCard');
+  const actionButtons = document.getElementById('actionButtons');
+
+  let currentActiveLeads = [];
+  let selectedLeadId = null;
+
+  const q = query(collection(db, "projectBriefs"), orderBy("submittedAt", "desc"));
+  
+  onSnapshot(q, (snapshot) => {
+    leadsContainer.innerHTML = '';
+    currentActiveLeads = [];
+
+    if (snapshot.empty) {
+      leadsContainer.innerHTML = '<p style="padding: 16px; color: grey; font-size:13px;">No briefs found yet.</p>';
+      resetView();
+      return;
+    }
+
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      const id = docSnap.id;
+      currentActiveLeads.push({ id, ...data });
+
+      let formattedDate = "Just now";
+      if(data.submittedAt) {
+        formattedDate = new Date(data.submittedAt.seconds * 1000).toLocaleDateString(undefined, {
+          month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+        });
+      }
+
+      const card = document.createElement('div');
+      card.className = `lead-card ${selectedLeadId === id ? 'active' : ''}`;
+      card.innerHTML = `
+        <h4>${data.businessName || data.clientName}</h4>
+        <p>${data.clientName} • ${data.email}</p>
+        <div class="meta-row">
+          <span class="badge ${data.status || 'new'}">${data.status || 'new'}</span>
+          <span style="font-size:11px; color:rgba(255,255,255,0.4); font-family:monospace;">${formattedDate}</span>
+        </div>
+      `;
+      
+      card.addEventListener('click', () => { selectLead(id); });
+      leadsContainer.appendChild(card);
+    });
+
+    if(selectedLeadId) {
+      // Agar current selected lead delete ho gayi ho database se, toh view clear karein
+      const exists = currentActiveLeads.some(l => l.id === selectedLeadId);
+      if (exists) {
+        renderDetails(selectedLeadId);
+      } else {
+        resetView();
+      }
+    }
+  });
+
+  function resetView() {
+    selectedLeadId = null;
+    emptyState.style.display = 'block';
+    detailCard.style.display = 'none';
+    rawCard.style.display = 'none';
+    actionButtons.style.display = 'none';
+    document.getElementById('headerBusinessName').textContent = "Select a Brief";
+  }
+
+  function selectLead(id) {
+    selectedLeadId = id;
+    document.querySelectorAll('.lead-card').forEach(c => c.classList.remove('active'));
+    renderDetails(id);
+  }
+
+  function renderDetails(id) {
+    const lead = currentActiveLeads.find(l => l.id === id);
+    if(!lead) return;
+
+    emptyState.style.display = 'none';
+    detailCard.style.display = 'block';
+    rawCard.style.display = 'block';
+    actionButtons.style.display = 'block';
+
+    document.getElementById('headerBusinessName').textContent = lead.businessName || lead.clientName;
+    document.getElementById('cName').textContent = lead.clientName;
+    document.getElementById('cEmail').textContent = lead.email;
+    document.getElementById('cPhone').textContent = lead.phone || '—';
+    document.getElementById('cTimeline').textContent = lead.timeline || '—';
+    document.getElementById('cType').textContent = lead.siteType || '—';
+    document.getElementById('cStyle').textContent = lead.styleMood || '—';
+    document.getElementById('cPreset').textContent = lead.colorPreset || '—';
+    
+    document.getElementById('cColorHex').textContent = lead.customPrimaryColor;
+    document.getElementById('cColorCircle').style.backgroundColor = lead.customPrimaryColor;
+
+    const pagesBox = document.getElementById('cPagesTags');
+    pagesBox.innerHTML = lead.pagesNeeded?.length 
+      ? lead.pagesNeeded.map(p => `<span class="tag">${p}</span>`).join('') 
+      : '<span style="color:grey; font-size:13px;">None selected</span>';
+      
+    document.getElementById('cPagesOther').textContent = lead.pagesOther ? `Others: ${lead.pagesOther}` : '';
+
+    const featuresBox = document.getElementById('cFeaturesTags');
+    featuresBox.innerHTML = lead.featuresSelected?.length 
+      ? lead.featuresSelected.map(f => `<span class="tag">${f}</span>`).join('') 
+      : '<span style="color:grey; font-size:13px;">None selected</span>';
+
+    const fOther = document.getElementById('cFeaturesOther');
+    if(lead.featuresOther) {
+      fOther.style.display = 'block';
+      fOther.innerHTML = `<strong>Extra Feature Specs Request:</strong><br>${lead.featuresOther}`;
+    } else {
+      fOther.style.display = 'none';
+    }
+
+    document.getElementById('cIdea').textContent = lead.projectIdea || '—';
+
+    const inspBox = document.getElementById('cInspirationBox');
+    if(lead.inspirationLinks) {
+      inspBox.style.display = 'block';
+      document.getElementById('cInspiration').textContent = lead.inspirationLinks;
+    } else {
+      inspBox.style.display = 'none';
+    }
+
+    const toggleBtn = document.getElementById('toggleStatusBtn');
+    if(lead.status === 'reviewed') {
+      toggleBtn.textContent = "Mark as New";
+      toggleBtn.style.background = '#5A6472';
+    } else {
+      toggleBtn.textContent = "Mark Reviewed";
+      toggleBtn.style.background = 'var(--ok)';
+    }
+
+    document.getElementById('rawTextarea').value = buildDashboardMarkdown(lead);
+  }
+
+  // Toggle Status Action
+  document.getElementById('toggleStatusBtn').addEventListener('click', async () => {
+    if(!selectedLeadId) return;
+    const lead = currentActiveLeads.find(l => l.id === selectedLeadId);
+    const newStatus = lead.status === 'reviewed' ? 'new' : 'reviewed';
+    try {
+      await updateDoc(doc(db, "projectBriefs", selectedLeadId), { status: newStatus });
+    } catch (e) { console.error(e); }
+  });
+
+  // CORE DELETE ACTION FUNCTIONALITY
+  document.getElementById('deleteBriefBtn').addEventListener('click', async () => {
+    if(!selectedLeadId) return;
+    
+    const confirmation = confirm("Kya aap pakka is brief ko hamesha ke liye delete karna chahte hain? Ye data database se permanently remove ho jayega.");
+    if(!confirmation) return;
+
+    try {
+      // Direct remove entry target using Firestore deleteDoc function
+      await deleteDoc(doc(db, "projectBriefs", selectedLeadId));
+      alert("Brief successfully deleted from database!");
+      resetView();
+    } catch (e) {
+      console.error("Error deleting document: ", e);
+      alert("Delete karne me error aayi. Rules check karein.");
+    }
+  });
+
+  // Copy Clipboard action
+  document.getElementById('copyRawBtn').addEventListener('click', () => {
+    const rawText = document.getElementById('rawTextarea');
+    rawText.select();
+    document.execCommand('copy');
+    alert('Markdown context copied to clipboard successfully!');
+  });
+
+  function buildDashboardMarkdown(lead) {
+    let md = `# Website Project Brief — ${lead.businessName || lead.clientName}\n\n`;
+    md += `## Client Profile\n- **Name:** ${lead.clientName}\n- **Email:** ${lead.email}\n- **Phone:** ${lead.phone || '—'}\n\n`;
+    md += `## Blueprint Parameters\n- **Site Type:** ${lead.siteType}\n- **Style Theme:** ${lead.styleMood}\n- **Color Palette Preset:** ${lead.colorPreset}\n- **Primary Custom Hex:** ${lead.customPrimaryColor}\n\n`;
+    md += `## Architecture Structure Requested\n`;
+    if(lead.pagesNeeded?.length) lead.pagesNeeded.forEach(p => md += `- ${p}\n`);
+    if(lead.pagesOther) md += `- Other Requested Pages: ${lead.pagesOther}\n`;
+    md += `\n## Core Feature Plugins\n`;
+    if(lead.featuresSelected?.length) lead.featuresSelected.forEach(f => md += `- ${f}\n`);
+    if(lead.featuresOther) md += `\n**Custom Functional Scope Script:**\n${lead.featuresOther}\n`;
+    md += `\n## Scope Vision Description\n${lead.projectIdea}\n\n`;
+    if(lead.inspirationLinks) md += `## Design References / Inspirations\n${lead.inspirationLinks}\n\n`;
+    md += `## Timeline Requirement\n- **Live Date Goal:** ${lead.timeline}\n`;
+    return md;
+  }
+</script>
+</body>
+</html>
