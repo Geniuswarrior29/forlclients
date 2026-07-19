@@ -548,6 +548,41 @@
     try {
       await addDoc(collection(db, "projectBriefs"), projectData);
       
+      // Send Email Notification via Web3Forms
+      const emailHTML = `
+        <h2>New Project Brief Submitted</h2>
+        <p><strong>Client Name:</strong> ${projectData.clientName}</p>
+        <p><strong>Business Name:</strong> ${projectData.businessName || 'N/A'}</p>
+        <p><strong>Email:</strong> ${projectData.email}</p>
+        <p><strong>Phone:</strong> ${projectData.phone || 'N/A'}</p>
+        <p><strong>Site Type:</strong> ${projectData.siteType}</p>
+        <p><strong>Design Style:</strong> ${projectData.styleMood}</p>
+        <p><strong>Timeline:</strong> ${projectData.timeline}</p>
+        <h3>Pages Needed:</h3>
+        <p>${projectData.pagesNeeded.join(', ') || 'None selected'}</p>
+        <h3>Features Needed:</h3>
+        <p>${projectData.featuresSelected.join(', ') || 'None selected'}</p>
+        <h3>Project Idea:</h3>
+        <p>${projectData.projectIdea}</p>
+      `;
+
+      await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          access_key: "4f3c3c73-e998-4774-96b1-35eca7d38a28",
+          subject: "🚀 New Project Brief from " + projectData.clientName,
+          from_name: "Portfolio Website",
+          email: projectData.email, // Client's email
+          replyto: projectData.email,
+          message: emailHTML,
+          autoresponse: "Hi " + projectData.clientName + ",\n\nThank you for reaching out! Your project brief has been successfully submitted.\n\nI will review your requirements and get back to you very soon.\n\nBest regards,\nDev Srivastava\nwecreatewebsitesofficial@gmail.com"
+        })
+      });
+
       // Form layout aur header panels gayab karne ke liye
       form.style.display = 'none';
       formHero.style.display = 'none';
